@@ -35,6 +35,25 @@ describe("Downvote in Song", () => {
     expect(recommendation.score).toEqual(-2);
   });
 
+  it("should exclude the song given score less than -5", async () => {
+    const song = createSongFactory();
+    await supertest(app).post("/recommendations").send(song);
+
+    const songData: Recommendation = await prisma.recommendation.findUnique({
+      where: { name: song.name }
+    });
+
+    for(let i=0; i<7; i++){
+      await supertest(app).post(`/recommendations/${songData.id}/downvote`);
+    }
+
+    const recommendation: Recommendation = await prisma.recommendation.findUnique({
+      where: { name: song.name }
+    });
+
+    expect(recommendation).toBeNull();
+  });
+
   it("should return 404 given a invalid id", async () => {
     const randomId = faker.random.numeric(5);
 
