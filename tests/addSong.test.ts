@@ -1,5 +1,4 @@
 import { prisma } from "../src/database.js";
-import { faker } from "@faker-js/faker";
 import supertest from "supertest";
 import app from "../src/app.js";
 import createSongFactory from "./factories/createSongFactory.js";
@@ -17,21 +16,27 @@ describe("Add Song", () => {
 
   it("should return 201 given a valid body", async () => {
     const res = await supertest(app).post("/recommendations").send(song);
+    const recommendations = await prisma.recommendation.findMany({});
+
     expect(res.status).toEqual(201);
+    expect(recommendations.length).toEqual(1);
   });
 
   it("should return 422 given an invalid url", async () => {
-    const song2 = {
-      name: faker.random.words(4),
-      youtubeLink: "https://www.google.com",
-    };
+    const song2 = createSongFactory();
 
-    const res = await supertest(app).post("/recommendations").send(song2);
+    const res = await supertest(app).post("/recommendations").send({...song2, youtubeLink: "https://www.google.com"});
+    const recommendations = await prisma.recommendation.findMany({});
+
     expect(res.status).toEqual(422);
+    expect(recommendations.length).toEqual(1);
   });
 
   it("should return 409 given a repeated name", async () => {
     const res = await supertest(app).post("/recommendations").send(song);
+    const recommendations = await prisma.recommendation.findMany({});
+
     expect(res.status).toEqual(409);
+    expect(recommendations.length).toEqual(1);
   });
 });
