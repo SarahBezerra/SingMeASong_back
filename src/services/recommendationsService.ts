@@ -7,31 +7,35 @@ export type CreateRecommendationData = Omit<Recommendation, "id" | "score">;
 async function insert(createRecommendationData: CreateRecommendationData) {
 
   const recommendation = await recommendationRepository.findByName(createRecommendationData.name);
-  if(recommendation) throw conflictError("song name already exists");
+  if(recommendation) throw conflictError("Recommendations names must be unique");
 
   await recommendationRepository.create(createRecommendationData);
 }
 
 async function upvote(id: number) {
-  const recommendation = await recommendationRepository.find(id);
-  if (!recommendation) throw notFoundError();
+  await getByIdOrFail(id);
 
   await recommendationRepository.updateScore(id, "increment");
 }
 
 async function downvote(id: number) {
-  const recommendation = await recommendationRepository.find(id);
-  if (!recommendation) throw notFoundError();
+  await getByIdOrFail(id);
 
-  await recommendationRepository.updateScore(id, "decrement");
+  const updatedRecommendation = await recommendationRepository.updateScore(
+    id,
+    "decrement"
+  );
 
-  if (recommendation.score < -5) {
+  if (updatedRecommendation.score < -5) {
     await recommendationRepository.remove(id);
   }
 }
 
-async function getById(id: number) {
-  return recommendationRepository.find(id);
+async function getByIdOrFail(id: number) {
+  const recommendation = await recommendationRepository.find(id);
+  if (!recommendation) throw notFoundError();
+
+  return recommendation;
 }
 
 async function get() {
@@ -82,6 +86,6 @@ export const recommendationService = {
   downvote,
   getRandom,
   get,
-  getById,
+  getById: getByIdOrFail,
   getTop,
 };

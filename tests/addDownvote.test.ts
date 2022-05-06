@@ -35,7 +35,7 @@ describe("Downvote in Song", () => {
     expect(recommendation.score).toEqual(-2);
   });
 
-  it("should exclude the song given score less than -5", async () => {
+  it("should exclude the song given score lower than -5", async () => {
     const song = createSongFactory();
     await supertest(app).post("/recommendations").send(song);
 
