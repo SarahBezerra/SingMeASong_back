@@ -1,10 +1,14 @@
 import { Recommendation } from "@prisma/client";
 import { recommendationRepository } from "../repositories/recommendationRepository.js";
-import { notFoundError } from "../utils/errorUtils.js";
+import { conflictError, notFoundError } from "../utils/errorUtils.js";
 
 export type CreateRecommendationData = Omit<Recommendation, "id" | "score">;
 
 async function insert(createRecommendationData: CreateRecommendationData) {
+
+  const recommendation = await recommendationRepository.findByName(createRecommendationData.name);
+  if(recommendation) throw conflictError("song name already exists");
+
   await recommendationRepository.create(createRecommendationData);
 }
 
