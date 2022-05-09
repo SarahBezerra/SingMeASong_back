@@ -4,11 +4,11 @@ import { recommendationService } from '../../src/services/recommendationsService
 import { notFoundError } from '../../src/utils/errorUtils';
 import createSongFactory from '../factories/createSongFactory';
 
-describe("Get Recommendation", () => {
+describe("Get Recommendation by Id", () => {
     it("should return a recommendation given a valid id", async () => {
         const song = createSongFactory();
         
-        const findRecommendationInRepository = jest
+        jest
             .spyOn(recommendationRepository, "find")
             .mockResolvedValue({id: 1, score: 0, ...song});
             
